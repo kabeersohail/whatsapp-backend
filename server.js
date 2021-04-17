@@ -3,6 +3,7 @@ import express from 'express';
 import mongoose from 'mongoose';
 import Messages from './dbMessages.js';
 import Pusher from 'pusher';
+import cors from 'cors';
 // app config 
 const app = express();
 const port = process.env.PORT || 9000; 
@@ -17,6 +18,8 @@ const pusher = new Pusher({
 
 //middleware
 app.use(express.json())
+app.use(cors());
+
 
 //DB config
 const connection_url = 'mongodb://kabeer:xwZQeuKkiHVVDzbo@cluster0-shard-00-00.4lmra.mongodb.net:27017,cluster0-shard-00-01.4lmra.mongodb.net:27017,cluster0-shard-00-02.4lmra.mongodb.net:27017/whatsapp-db?ssl=true&replicaSet=atlas-88dvgx-shard-0&authSource=admin&retryWrites=true&w=majority';
@@ -38,9 +41,11 @@ db.once("open",()=>{
 
         if(change.operationType == 'insert'){
             const messageDetails = change.fullDocument;
-            pusher.trigger('message','inserted',{
-                name : messageDetails.user,
-                message : messageDetails.message
+            pusher.trigger('messages','inserted',{
+                name : messageDetails.name,
+                message : messageDetails.message,
+                timestamp :messageDetails.timestamp,
+                received : messageDetails.received,
             });
         }
         else{
